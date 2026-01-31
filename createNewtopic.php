@@ -2,7 +2,8 @@
 session_start();
 require_once("db.php");
 
-function test_input($data) {
+function test_input($data)
+{
     $data = trim($data);
     $data = stripslashes($data);
     $data = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
@@ -31,11 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdo = new PDO($attr, $db_user, $db_pwd, $options);
 
-            // Debugging: Check values before query execution
-            var_dump($topic, $_SESSION['user_id']);
-
-            // Updated query to include last_edited
-            $query = "INSERT INTO Topics (title, user_id, created_at, last_edited) VALUES (:title, :user_id, NOW(), NOW())";
+            // Updated query
+            $query = "INSERT INTO Topics (title, user_id, created_at) VALUES (:title, :user_id, NOW())";
             $stmt = $pdo->prepare($query);
             $stmt->bindParam(':title', $topic, PDO::PARAM_STR);
             $stmt->bindParam(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
@@ -81,7 +79,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- Form to create a new topic -->
         <form action="createNewtopic.php" method="post" novalidate>
             <div>
-                <input id="topic" name="topic" type="text" placeholder="Topic" class="input-field" maxlength="256" required>
+                <input id="topic" name="topic" type="text" placeholder="Topic" class="input-field" maxlength="256"
+                    required>
                 <div id="error-text-topic" class="error-text hidden">
                     Topic name required (max 256 characters).
                 </div>

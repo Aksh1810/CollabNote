@@ -44,7 +44,7 @@ try {
             $insertQuery = "INSERT INTO Notes (topic_id, user_id, content, created_at)
                             VALUES (?, ?, ?, NOW())";
             $insertStmt = $pdo->prepare($insertQuery);
-            $insertStmt->execute([$topic_id, $_SESSION['user_id'], htmlspecialchars($content)]);
+            $insertStmt->execute([$topic_id, $_SESSION['user_id'], $content]);
             header("Location: viewNote.php?topic_id=$topic_id");
             exit();
         }
@@ -91,7 +91,7 @@ try {
         <?php foreach ($notes as $note): ?>
         <div class="topic-card">
             <p class="metadata">
-                <b><img src="<?= htmlspecialchars($note['avatar_url'] ?? 'images/default-avatar.png') ?>" 
+                <b><img src="<?= htmlspecialchars($note['avatar_url'] ?? 'images/default.jpeg') ?>" 
          alt="Avatar" 
          style="width: 25px; height: 25px; border-radius: 50%; object-fit: cover; border: 2px solid #ccc;"> 
          <?= htmlspecialchars($note['screenname']) ?>

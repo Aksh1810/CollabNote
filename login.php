@@ -2,7 +2,8 @@
 session_start();
 require_once("db.php");
 
-function test_input($data) {
+function test_input($data)
+{
     $data = trim($data);
     $data = stripslashes($data);
     $data = htmlspecialchars($data);
@@ -21,9 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $password = test_input($_POST["password"]);
-    $passwordRegex = "/^[^\s]{6,}$/";
-    if (!preg_match($passwordRegex, $password)) {
-        $errors["password"] = "Invalid Password";
+    if (empty($password)) {
+        $errors["password"] = "Password is required";
         $dataOK = FALSE;
     }
 
@@ -31,23 +31,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $db = new PDO($attr, $db_user, $db_pwd, $options);
         } catch (PDOException $e) {
-            throw new PDOException($e->getMessage(), (int)$e->getCode());
+            die("Database Error: " . $e->getMessage());
         }
 
-        $query = "SELECT user_id, screenname FROM Users WHERE email='$email' AND password='$password'";
-        $result = $db->query($query);
+        $query = "SELECT user_id, screenname, password, avatar_url FROM Users WHERE email = :email";
+        $stmt = $db->prepare($query);
+        $stmt->execute([':email' => $email]);
+        $user = $stmt->fetch();
 
-        if (!$result) {
-            $errors["Database Error"] = "Could not retrieve user information";
-        } elseif ($row = $result->fetch()) {
-            session_start();
-            $_SESSION['user_id'] = $row['user_id'];
-            $_SESSION['screenname'] = $row['screenname'];
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['user_id'] = $user['user_id'];
+            $_SESSION['screenname'] = $user['screenname'];
+            $_SESSION['avatar_url'] = $user['avatar_url'];
             $db = null;
             header("Location: topiclist.php");
             exit();
         } else {
-            $errors["Login Failed"] = "That username/password combination does not exist.";
+            $errors["Login Failed"] = "Invalid email or password.";
         }
 
         $db = null;
@@ -65,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -72,6 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="css/styles.css" />
     <script src="js/eventHandlers.js"></script>
 </head>
+
 <body id="login-page">
     <div class="container">
         <div class="topic-header">
@@ -98,4 +100,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <script src="js/eventRegisterLogin.js"></script>
 </body>
+
 </html>
